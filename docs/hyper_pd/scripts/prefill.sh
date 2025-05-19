@@ -30,7 +30,7 @@ num_prefill=${1:-4} # Number of prefill nodes
 num_decode=${2:-8} # Number of decode nodes
 expert_location=${3:-"/mnt/attachment_ep_statistics/prefill_in4096.json"}
 base_dir=${4:-"/cfs"}
-timestamp="decode"_$(date +'%Y%m%d_%H%M%S')
+timestamp="prefill"_$(date +'%Y%m%d_%H%M%S')
 log_dir="$base_dir/$timestamp"
 
 remote_app_command="MC_TE_METRIC=true SGLANG_HACK_DEEPEP_NEW_MODE=0 SGL_ENABLE_JIT_DEEPGEMM=1 \
