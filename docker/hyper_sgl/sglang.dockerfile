@@ -9,7 +9,24 @@ RUN ln -fs /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
     apt update && apt install -y tzdata && \
         dpkg-reconfigure --frontend noninteractive tzdata
 
-RUN wget -O /etc/apt/sources.list https://mirrors.cloud.tencent.com/repo/ubuntu22_sources.list
+# ubuntu22.04 apt source
+#RUN wget -O /etc/apt/sources.list https://mirrors.cloud.tencent.com/repo/ubuntu22_sources.list
+
+# ubuntu24.04 apt source
+RUN mv /etc/apt/sources.list /etc/apt/sources.list.bak && \
+    cat <<EOF > /etc/apt/sources.list
+# 默认注释了源码镜像以提高 apt update 速度，如有需要可自行取消注释
+deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ noble main restricted universe multiverse
+# deb-src https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ noble main restricted universe multiverse
+deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ noble-updates main restricted universe multiverse
+# deb-src https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ noble-updates main restricted universe multiverse
+deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ noble-backports main restricted universe multiverse
+# deb-src https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ noble-backports main restricted universe multiverse
+
+# 以下安全更新软件源包含了官方源与镜像站配置，如有需要可自行修改注释切换
+deb http://security.ubuntu.com/ubuntu/ noble-security main restricted universe multiverse
+# deb-src http://security.ubuntu.com/ubuntu/ noble-security main restricted universe multiverse
+EOF
 
 RUN apt update && apt install -y \
         openssh-client openssh-server \
@@ -49,10 +66,18 @@ RUN chmod 700 /root/.ssh && \
 RUN mkdir -p /workspace
 
 # install OFED UMD
-RUN apt update && wget -q --show-progress https://taco-1251783334.cos.ap-shanghai.myqcloud.com/ofed/MLNX_OFED_LINUX-5.8-2.0.3.0-ubuntu22.04-x86_64.tgz && \
+# Ubuntu22.04
+# RUN apt update && wget -q --show-progress https://taco-1251783334.cos.ap-shanghai.myqcloud.com/ofed/MLNX_OFED_LINUX-5.8-2.0.3.0-ubuntu22.04-x86_64.tgz && \
+#     tar xf MLNX_OFED_LINUX-5.8-2.0.3.0-ubuntu22.04-x86_64.tgz && \
+#     cd MLNX_OFED_LINUX-5.8-2.0.3.0-ubuntu22.04-x86_64 && \
+#     ./mlnxofedinstall --user-space-only --without-fw-update --without-ucx-cuda --force && cd ../ && rm MLNX_OFED_LINUX* -rf
+
+# Ubuntu24.04
+RUN wget -q --show-progress https://taco-1251783334.cos.ap-shanghai.myqcloud.com/ofed/MLNX_OFED_LINUX-5.8-2.0.3.0-ubuntu22.04-x86_64.tgz && \
     tar xf MLNX_OFED_LINUX-5.8-2.0.3.0-ubuntu22.04-x86_64.tgz && \
     cd MLNX_OFED_LINUX-5.8-2.0.3.0-ubuntu22.04-x86_64 && \
-    ./mlnxofedinstall --user-space-only --without-fw-update --without-ucx-cuda --force && cd ../ && rm MLNX_OFED_LINUX* -rf
+    sed -i 's/dpatch//g' mlnxofedinstall && sed -i 's/ubuntu22/ubuntu2[24]/g' mlnxofedinstall && \
+    ./mlnxofedinstall --user-space-only --without-fw-update --without-ucx-cuda --force --skip-distro-check && cd ../ && rm MLNX_OFED_LINUX* -rf
 
 # export openmpi
 ENV PATH=/usr/mpi/gcc/openmpi-4.1.5a1/bin:$PATH
@@ -94,8 +119,8 @@ ENV GLOO_SOCKET_IFNAME=eth0
 # use tencent pip source
 RUN pip config set global.index-url http://mirrors.cloud.tencent.com/pypi/simple
 RUN pip config set global.trusted-host mirrors.cloud.tencent.com
-RUN pip install pandas openpyxl
-RUN pip install concurrent-log-handler
+RUN pip install pandas openpyxl --break-system-packages
+RUN pip install concurrent-log-handler --break-system-packages
 RUN if [ -f /usr/bin/python ]; then rm /usr/bin/python; fi && \
     ln -s /usr/bin/python3 /usr/bin/python
 
