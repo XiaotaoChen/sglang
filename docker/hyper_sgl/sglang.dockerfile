@@ -119,8 +119,9 @@ ENV GLOO_SOCKET_IFNAME=eth0
 # use tencent pip source
 RUN pip config set global.index-url http://mirrors.cloud.tencent.com/pypi/simple
 RUN pip config set global.trusted-host mirrors.cloud.tencent.com
-RUN pip install pandas openpyxl --break-system-packages
-RUN pip install concurrent-log-handler --break-system-packages
+RUN mv /usr/lib/python3.12/EXTERNALLY-MANAGED /usr/lib/python3.12/EXTERNALLY-MANAGED.bk
+RUN pip install pandas openpyxl
+RUN pip install concurrent-log-handler
 RUN if [ -f /usr/bin/python ]; then rm /usr/bin/python; fi && \
     ln -s /usr/bin/python3 /usr/bin/python
 
