@@ -41,55 +41,89 @@ clear_cuda_arches(CMAKE_FLAG)
 
 include(FetchContent)
 
-# cutlass
+# # cutlass
+# FetchContent_Declare(
+#     repo-cutlass
+#     GIT_REPOSITORY https://github.com/NVIDIA/cutlass
+#     GIT_TAG        f115c3f85467d5d9619119d1dbeb9c03c3d73864
+#     GIT_SHALLOW    OFF
+# )
+# FetchContent_Populate(repo-cutlass)
+
+# # DeepGEMM
+# if("${CUDA_VERSION}" VERSION_EQUAL "12.8")
+#   set(DeepGEMM_REPO "https://github.com/sgl-project/DeepGEMM")
+#   set(DeepGEMM_TAG "blackwell")
+# else()
+#   set(DeepGEMM_REPO "https://github.com/deepseek-ai/DeepGEMM")
+#   set(DeepGEMM_TAG "8dfa3298274bfe6b242f6f8a3e6f3eff2707dd9f")
+# endif()
+
+# FetchContent_Declare(
+#     repo-deepgemm
+#     GIT_REPOSITORY ${DeepGEMM_REPO}
+#     GIT_TAG        ${DeepGEMM_TAG}
+#     GIT_SHALLOW    OFF
+# )
+# FetchContent_Populate(repo-deepgemm)
+# # flashinfer
+# FetchContent_Declare(
+#     repo-flashinfer
+#     GIT_REPOSITORY https://github.com/flashinfer-ai/flashinfer.git
+#     GIT_TAG        9220fb3443b5a5d274f00ca5552f798e225239b7
+#     GIT_SHALLOW    OFF
+# )
+# FetchContent_Populate(repo-flashinfer)
+# # flash-attention
+# FetchContent_Declare(
+#     repo-flash-attention
+#     GIT_REPOSITORY https://github.com/sgl-project/sgl-attn
+#     GIT_TAG        sgl-kernel
+#     GIT_SHALLOW    OFF
+# )
+# FetchContent_Populate(repo-flash-attention)
+# # mscclpp
+# FetchContent_Declare(
+#     repo-mscclpp
+#     GIT_REPOSITORY https://github.com/microsoft/mscclpp.git
+#     GIT_TAG        51eca89d20f0cfb3764ccd764338d7b22cd486a6
+#     GIT_SHALLOW    OFF
+# )
+# FetchContent_Populate(repo-mscclpp)
+
+
+
+# # cutlass
 FetchContent_Declare(
     repo-cutlass
-    GIT_REPOSITORY https://github.com/NVIDIA/cutlass
-    GIT_TAG        f115c3f85467d5d9619119d1dbeb9c03c3d73864
-    GIT_SHALLOW    OFF
+    SOURCE_DIR /cfs/xtchen/repositories/sgl-kernel-sub/cutlass  # 修改为本地路径
 )
 FetchContent_Populate(repo-cutlass)
-
-# DeepGEMM
-if("${CUDA_VERSION}" VERSION_EQUAL "12.8")
-  set(DeepGEMM_REPO "https://github.com/sgl-project/DeepGEMM")
-  set(DeepGEMM_TAG "blackwell")
-else()
-  set(DeepGEMM_REPO "https://github.com/deepseek-ai/DeepGEMM")
-  set(DeepGEMM_TAG "8dfa3298274bfe6b242f6f8a3e6f3eff2707dd9f")
-endif()
-
+# # DeepGEMM
 FetchContent_Declare(
     repo-deepgemm
-    GIT_REPOSITORY ${DeepGEMM_REPO}
-    GIT_TAG        ${DeepGEMM_TAG}
-    GIT_SHALLOW    OFF
+    SOURCE_DIR /cfs/xtchen/repositories/sgl-kernel-sub/DeepGEMM  # 修改为本地路径
 )
 FetchContent_Populate(repo-deepgemm)
-# flashinfer
+# # flashinfer
 FetchContent_Declare(
     repo-flashinfer
-    GIT_REPOSITORY https://github.com/flashinfer-ai/flashinfer.git
-    GIT_TAG        9220fb3443b5a5d274f00ca5552f798e225239b7
-    GIT_SHALLOW    OFF
+    SOURCE_DIR /cfs/xtchen/repositories/sgl-kernel-sub/flashinfer  # 修改为本地路径
 )
 FetchContent_Populate(repo-flashinfer)
-# flash-attention
+# # flash-attention# # flash-attention
 FetchContent_Declare(
     repo-flash-attention
-    GIT_REPOSITORY https://github.com/sgl-project/sgl-attn
-    GIT_TAG        sgl-kernel
-    GIT_SHALLOW    OFF
+    SOURCE_DIR /cfs/xtchen/repositories/sgl-kernel-sub/sgl-attn  # 修改为本地路径
 )
 FetchContent_Populate(repo-flash-attention)
-# mscclpp
+
 FetchContent_Declare(
     repo-mscclpp
-    GIT_REPOSITORY https://github.com/microsoft/mscclpp.git
-    GIT_TAG        51eca89d20f0cfb3764ccd764338d7b22cd486a6
-    GIT_SHALLOW    OFF
+    SOURCE_DIR /cfs/xtchen/repositories/sgl-kernel-sub/mscclpp  # 修改为本地路径
 )
 FetchContent_Populate(repo-mscclpp)
+
 
 # ccache option
 option(ENABLE_CCACHE "Whether to use ccache" ON)
@@ -253,6 +287,9 @@ set(SOURCES
     "csrc/moe/cutlass_moe/w4a8/scaled_mm_entry.cu"
     "csrc/moe/cutlass_moe/w4a8/w4a8_moe_data.cu"
     "csrc/moe/cutlass_moe/w4a8/w4a8_grouped_mm_c3x.cu"
+    "csrc/moe/cutlass_moe/w4a8/w4a8_grouped_mm_simple.cu"
+    "csrc/moe/cutlass_moe/w4a8/common/cutlassUtils.cu"
+    "csrc/moe/cutlass_moe/w4a8/common/commonUtils.cpp"
     "csrc/common_extension.cc"
     "csrc/moe/marlin_moe_wna16/ops.cu"
     "csrc/moe/marlin_moe_wna16/gptq_marlin_repack.cu"
@@ -300,7 +337,7 @@ endif()
 set(MSCCLPP_USE_CUDA ON)
 set(MSCCLPP_BYPASS_GPU_CHECK ON)
 set(MSCCLPP_BUILD_TESTS OFF)
-add_subdirectory(${repo-mscclpp_SOURCE_DIR})
+add_subdirectory(${repo-mscclpp_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR}/mscclpp-build)
 target_link_libraries(common_ops PRIVATE ${TORCH_LIBRARIES} c10 cuda cublas cublasLt mscclpp_static)
 
 target_compile_definitions(common_ops PRIVATE

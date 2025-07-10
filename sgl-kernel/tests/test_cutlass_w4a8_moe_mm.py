@@ -1,6 +1,7 @@
 import pytest
 import torch
 from sgl_kernel import cutlass_w4a8_moe_mm
+from sgl_kernel import cutlass_w4a8_moe_mm_simple
 
 
 def pack_int4_values_to_int8(int4_values_interleaved: torch.Tensor) -> torch.Tensor:
@@ -101,6 +102,19 @@ def test_int4_fp8_grouped_gemm_single_expert(batch_size):
         128,
         8,
     )
+
+    # w_scale_fp8 = ref_w_scale.permute(0, 2, 1).contiguous().to(torch.float8_e4m3fn)
+    # cutlass_w4a8_moe_mm_simple(
+    #     c,
+    #     a_q,
+    #     w,
+    #     a_scale,
+    #     w_scale_fp8,
+    #     expert_offsets[:-1],
+    #     problem_sizes,
+    #     8,
+    # )
+
     c = c.to(dtype)
 
     # Reference implementation

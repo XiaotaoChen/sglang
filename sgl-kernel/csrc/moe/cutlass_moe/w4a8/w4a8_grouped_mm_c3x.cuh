@@ -32,6 +32,8 @@
 #include "cutlass_extensions/gemm/collective/collective_builder_mixed_input.hpp"
 #include "w4a8_get_group_starts.cuh"
 
+#include "common/cutlassUtils.h"
+
 using namespace cute;
 
 namespace {
@@ -271,6 +273,24 @@ void cutlass_w4a8_group_gemm_caller(
   if (status != cutlass::Status::kSuccess) {
     TORCH_CHECK(false, "GEMM execution failed");
   }
+
+  // benchmarking
+  // profile
+  int warmup = 10;
+  int loop = 100;
+  HAI::ProfileResult result;
+  // generate mnk_sizes from problem_sizes
+  std::vector<std::tuple<int, int, int>> mnk_sizes(num_experts);
+  torch::Tensor problem_sizes_cpu = problem_sizes.cpu().contiguous();
+  auto problem_sizes_cpu_ptr = problem_sizes_cpu.data_ptr<int32_t>();
+  for (int i = 0; i < num_experts; ++i) {
+    int _n = problem_sizes_cpu_ptr[i * 3];
+    int _m = problem_sizes_cpu_ptr[i * 3 + 1];
+    int _k = problem_sizes_cpu_ptr[i * 3 + 2];
+    mnk_sizes[i] = std::make_tuple(_m, _n, _k);
+  }
+  grouped_mixed_dtype_profiling(result, gemm, mnk_sizes, warmup, loop, "cutlass_w4a8_group_gemm_caller");
+
 }
 
 }  // namespace

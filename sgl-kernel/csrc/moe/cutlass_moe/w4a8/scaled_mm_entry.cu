@@ -36,6 +36,16 @@ void get_cutlass_w4a8_moe_mm_data_caller(
     const int64_t n,
     const int64_t k);
 
+void sm90_int4_fp8_group_gemm_simple(
+    torch::Tensor& d_tensors,
+    torch::Tensor const& a_tensors,
+    torch::Tensor const& b_tensors,
+    torch::Tensor const& a_scales,
+    torch::Tensor const& b_scales,
+    torch::Tensor const& expert_offsets,
+    torch::Tensor const& problem_sizes,
+    int64_t topk);
+
 void cutlass_w4a8_moe_mm(
     torch::Tensor& d_tensors,
     torch::Tensor const& a_tensors,
@@ -89,3 +99,26 @@ void get_cutlass_w4a8_moe_mm_data(
       k);
   return;
 }
+
+
+void cutlass_w4a8_moe_mm_simple(
+    torch::Tensor& d_tensors,
+    torch::Tensor const& a_tensors,
+    torch::Tensor const& b_tensors,
+    torch::Tensor const& a_scales,
+    torch::Tensor const& b_scales,
+    torch::Tensor const& expert_offsets,
+    torch::Tensor const& problem_sizes,
+    int64_t topk) {
+  sm90_int4_fp8_group_gemm_simple(
+      d_tensors,
+      a_tensors,
+      b_tensors,
+      a_scales,
+      b_scales,
+      expert_offsets,
+      problem_sizes,
+      topk);
+  return;
+}
+

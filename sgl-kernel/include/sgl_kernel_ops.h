@@ -497,6 +497,16 @@ void cutlass_w4a8_moe_mm(
     int64_t chunk_size,
     int64_t topk);
 
+void cutlass_w4a8_moe_mm_simple(
+    torch::Tensor& d_tensors,
+    torch::Tensor const& a_tensors,
+    torch::Tensor const& b_tensors,
+    torch::Tensor const& a_scales,
+    torch::Tensor const& b_scales,
+    torch::Tensor const& expert_offsets,
+    torch::Tensor const& problem_sizes,
+    int64_t topk);
+
 /*
  * From FlashInfer
  */

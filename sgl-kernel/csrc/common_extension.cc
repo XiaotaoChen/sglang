@@ -297,6 +297,12 @@ TORCH_LIBRARY_FRAGMENT(sgl_kernel, m) {
       "               int chunk_size, int topk) -> ()");
   m.impl("cutlass_w4a8_moe_mm", torch::kCUDA, &cutlass_w4a8_moe_mm);
 
+  m.def(
+      "cutlass_w4a8_moe_mm_simple(Tensor! d, Tensor a, Tensor b, "
+      "               Tensor a_scales, Tensor b_scales, Tensor expert_offsets, "
+      "               Tensor problem_sizes, int topk) -> ()");
+  m.impl("cutlass_w4a8_moe_mm_simple", torch::kCUDA, &cutlass_w4a8_moe_mm_simple);
+
   /*
    * From FlashInfer
    */

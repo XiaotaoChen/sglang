@@ -8,6 +8,7 @@ from sgl_kernel import (
     get_cutlass_w4a8_moe_mm_data,
     sgl_per_tensor_quant_fp8,
     silu_and_mul,
+    cutlass_w4a8_moe_mm_simple,
 )
 
 from sglang.srt.layers.moe.ep_moe.kernels import (
@@ -174,6 +175,19 @@ def cutlass_w4a8_moe(
         topk,
     )
 
+    # # custom implementation
+    # w1_scale_fp8 = w1_scale.permute(0, 2, 1).contiguous().to(torch.float8_e4m3fn)
+    # cutlass_w4a8_moe_mm_simple(
+    #     c1,
+    #     gateup_input,
+    #     w1_q,
+    #     a1_scale.float(),
+    #     w1_scale_fp8,
+    #     expert_offsets[:-1],
+    #     problem_sizes1,
+    #     topk,
+    # )
+
     intermediate = torch.empty((m * topk, n), device=device, dtype=torch.half)
     silu_and_mul(c1, intermediate)
 
@@ -197,6 +211,19 @@ def cutlass_w4a8_moe(
         128,
         topk,
     )
+
+    # # custom implementation
+    # w2_scale_fp8 = w2_scale.permute(0, 2, 1).contiguous().to(torch.float8_e4m3fn)
+    # cutlass_w4a8_moe_mm_simple(
+    #     c2,
+    #     intermediate_q,
+    #     w2_q,
+    #     a2_scale.float(),
+    #     w2_scale_fp8,
+    #     expert_offsets[:-1],
+    #     problem_sizes2,
+    #     topk,
+    # )
 
     output = torch.empty_like(a)
     post_reorder_triton_kernel[(m,)](

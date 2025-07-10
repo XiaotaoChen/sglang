@@ -44,7 +44,7 @@ def pack_interleave(num_experts, ref_weight, ref_scale):
     return w_q, w_scale
 
 
-@pytest.mark.parametrize("M", [1, 2, 4, 8, 16])
+@pytest.mark.parametrize("M", [1, 2, 4, 8, 16, 1024])
 @pytest.mark.parametrize("N", [2048])
 @pytest.mark.parametrize("K", [7168])
 @pytest.mark.parametrize("E", [256])
@@ -53,7 +53,9 @@ def pack_interleave(num_experts, ref_weight, ref_scale):
 @pytest.mark.parametrize("group_size", [128])
 @pytest.mark.parametrize("dtype", [torch.bfloat16])
 def test_cutlass_w4a8_moe(M, N, K, E, ep_size, topk, group_size, dtype):
+    print(f"\nTesting with M={M}, N={N}, K={K}, E={E}, ep_size={ep_size}, topk={topk}, group_size={group_size}, dtype={dtype}")
     local_e = E // ep_size
+    torch.manual_seed(0)
 
     debug = False
     if debug:
