@@ -54,6 +54,8 @@ from sglang.srt.model_loader.weight_utils import (
     get_quant_config,
     gguf_quant_weights_iterator,
     initialize_dummy_weights,
+    multi_thread_pt_weights_iterator,
+    multi_thread_safetensors_weights_iterator,
     np_cache_weights_iterator,
     pt_weights_iterator,
     safetensors_weights_iterator,
@@ -341,6 +343,7 @@ class DefaultModelLoader(BaseModelLoader):
         self, source: "Source"
     ) -> Generator[Tuple[str, torch.Tensor], None, None]:
         """Get an iterator for the model weights based on the load format."""
+        extra_config = self.load_config.model_loader_extra_config
         hf_folder, hf_weights_files, use_safetensors = self._prepare_weights(
             source.model_or_path, source.revision, source.fall_back_to_pt
         )
@@ -359,11 +362,30 @@ class DefaultModelLoader(BaseModelLoader):
             weight_loader_disable_mmap = global_server_args_dict.get(
                 "weight_loader_disable_mmap"
             )
-            weights_iterator = safetensors_weights_iterator(
-                hf_weights_files, disable_mmap=weight_loader_disable_mmap
-            )
+
+            if extra_config.get("enable_multithread_load"):
+                weights_iterator = multi_thread_safetensors_weights_iterator(
+                    hf_weights_files,
+                    max_workers=extra_config.get(
+                        "num_threads", self.DEFAULT_NUM_THREADS
+                    ),
+                    disable_mmap=weight_loader_disable_mmap,
+                )
+            else:
+                weights_iterator = safetensors_weights_iterator(
+                    hf_weights_files, disable_mmap=weight_loader_disable_mmap
+                )
+
         else:
-            weights_iterator = pt_weights_iterator(hf_weights_files)
+            if extra_config.get("enable_multithread_load"):
+                weights_iterator = multi_thread_pt_weights_iterator(
+                    hf_weights_files,
+                    max_workers=extra_config.get(
+                        "num_threads", self.DEFAULT_NUM_THREADS
+                    ),
+                )
+            else:
+                weights_iterator = pt_weights_iterator(hf_weights_files)
 
         # Apply the prefix.
         return ((source.prefix + name, tensor) for (name, tensor) in weights_iterator)
