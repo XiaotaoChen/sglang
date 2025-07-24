@@ -323,11 +323,11 @@ void run_sm90_int4_fp8_grouped_gemm(GroupedGemmInput<GemmConfig>& inputs) {
         throw std::runtime_error("[Mixed dtype WS grouped GEMM] " + err_msg);
     }
 
-    // profile
-    int warmup = 10;
-    int loop = 100;
-    HAI::ProfileResult result;
-    grouped_mixed_dtype_profiling(result, gemm_op, inputs._mnk_sizes, warmup, loop, "run_sm90_int4_fp8_grouped_gemm");
+    // // profile
+    // int warmup = 10;
+    // int loop = 100;
+    // HAI::ProfileResult result;
+    // grouped_mixed_dtype_profiling(result, gemm_op, inputs._mnk_sizes, warmup, loop, "run_sm90_int4_fp8_grouped_gemm");
     return;
 }
 
