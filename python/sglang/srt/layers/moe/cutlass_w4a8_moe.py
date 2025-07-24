@@ -159,42 +159,42 @@ def cutlass_w4a8_moe(
     c1 = torch.empty((m * topk, n * 2), device=device, dtype=torch.half)
     c2 = torch.zeros((m * topk, k), device=device, dtype=torch.half)
 
-    cutlass_w4a8_moe_mm(
-        c1,
-        gateup_input,
-        w1_q,
-        a1_scale.float(),
-        w1_scale,
-        expert_offsets[:-1],
-        problem_sizes1,
-        a_strides1,
-        b_strides1,
-        c_strides1,
-        s_strides13,
-        128,
-        topk,
-    )
-
-    # # custom implementation
-    # # w1_scale_fp8 = w1_scale.permute(0, 2, 1).contiguous().to(torch.float8_e4m3fn)
-    # tmp = w1_scale.reshape(
-    #     w1_scale.shape[0], w1_scale.shape[1], w1_scale.shape[2] // 4, 4) # [num_experts, k//128 / 4, n, 4]
-    # tmp = tmp.permute(0, 2, 1, 3)  # [num_experts, n, k//128 / 4, 4]
-    # tmp = tmp.reshape(
-    #     tmp.shape[0], tmp.shape[1], tmp.shape[2] * tmp.shape[3]
-    # )  # [num_experts, n, k//128]
-    # tmp = tmp.contiguous()
-    # w1_scale_fp8 = tmp.permute(0, 2, 1).contiguous().to(torch.float8_e4m3fn)
-    # cutlass_w4a8_moe_mm_simple(
+    # cutlass_w4a8_moe_mm(
     #     c1,
     #     gateup_input,
     #     w1_q,
     #     a1_scale.float(),
-    #     w1_scale_fp8,
+    #     w1_scale,
     #     expert_offsets[:-1],
     #     problem_sizes1,
+    #     a_strides1,
+    #     b_strides1,
+    #     c_strides1,
+    #     s_strides13,
+    #     128,
     #     topk,
     # )
+
+    # custom implementation
+    # w1_scale_fp8 = w1_scale.permute(0, 2, 1).contiguous().to(torch.float8_e4m3fn)
+    tmp = w1_scale.reshape(
+        w1_scale.shape[0], w1_scale.shape[1], w1_scale.shape[2] // 4, 4) # [num_experts, k//128 / 4, n, 4]
+    tmp = tmp.permute(0, 2, 1, 3)  # [num_experts, n, k//128 / 4, 4]
+    tmp = tmp.reshape(
+        tmp.shape[0], tmp.shape[1], tmp.shape[2] * tmp.shape[3]
+    )  # [num_experts, n, k//128]
+    tmp = tmp.contiguous()
+    w1_scale_fp8 = tmp.permute(0, 2, 1).contiguous().to(torch.float8_e4m3fn)
+    cutlass_w4a8_moe_mm_simple(
+        c1,
+        gateup_input,
+        w1_q,
+        a1_scale.float(),
+        w1_scale_fp8,
+        expert_offsets[:-1],
+        problem_sizes1,
+        topk,
+    )
 
     intermediate = torch.empty((m * topk, n), device=device, dtype=torch.half)
     silu_and_mul(c1, intermediate)
@@ -204,42 +204,42 @@ def cutlass_w4a8_moe(
     )
     sgl_per_tensor_quant_fp8(intermediate, intermediate_q, a2_scale.float(), True)
 
-    cutlass_w4a8_moe_mm(
-        c2,
-        intermediate_q,
-        w2_q,
-        a2_scale.float(),
-        w2_scale,
-        expert_offsets[:-1],
-        problem_sizes2,
-        a_strides2,
-        b_strides2,
-        c_strides2,
-        s_strides2,
-        128,
-        topk,
-    )
-
-    # # custom implementation
-    # # w2_scale_fp8 = w2_scale.permute(0, 2, 1).contiguous().to(torch.float8_e4m3fn)
-    # tmp = w2_scale.reshape(
-    #     w2_scale.shape[0], w2_scale.shape[1], w2_scale.shape[2] // 4, 4) # [num_experts, k//128 / 4, n, 4]
-    # tmp = tmp.permute(0, 2, 1, 3)  # [num_experts, n, k//128 / 4, 4]
-    # tmp = tmp.reshape(
-    #     tmp.shape[0], tmp.shape[1], tmp.shape[2] * tmp.shape[3]
-    # )  # [num_experts, n, k//128]
-    # tmp = tmp.contiguous()
-    # w2_scale_fp8 = tmp.permute(0, 2, 1).contiguous().to(torch.float8_e4m3fn)
-    # cutlass_w4a8_moe_mm_simple(
+    # cutlass_w4a8_moe_mm(
     #     c2,
     #     intermediate_q,
     #     w2_q,
     #     a2_scale.float(),
-    #     w2_scale_fp8,
+    #     w2_scale,
     #     expert_offsets[:-1],
     #     problem_sizes2,
+    #     a_strides2,
+    #     b_strides2,
+    #     c_strides2,
+    #     s_strides2,
+    #     128,
     #     topk,
     # )
+
+    # custom implementation
+    # w2_scale_fp8 = w2_scale.permute(0, 2, 1).contiguous().to(torch.float8_e4m3fn)
+    tmp = w2_scale.reshape(
+        w2_scale.shape[0], w2_scale.shape[1], w2_scale.shape[2] // 4, 4) # [num_experts, k//128 / 4, n, 4]
+    tmp = tmp.permute(0, 2, 1, 3)  # [num_experts, n, k//128 / 4, 4]
+    tmp = tmp.reshape(
+        tmp.shape[0], tmp.shape[1], tmp.shape[2] * tmp.shape[3]
+    )  # [num_experts, n, k//128]
+    tmp = tmp.contiguous()
+    w2_scale_fp8 = tmp.permute(0, 2, 1).contiguous().to(torch.float8_e4m3fn)
+    cutlass_w4a8_moe_mm_simple(
+        c2,
+        intermediate_q,
+        w2_q,
+        a2_scale.float(),
+        w2_scale_fp8,
+        expert_offsets[:-1],
+        problem_sizes2,
+        topk,
+    )
 
     output = torch.empty_like(a)
     post_reorder_triton_kernel[(m,)](

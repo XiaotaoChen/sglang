@@ -1,6 +1,6 @@
 #!/bin/bash
 
-docker_id="aicompute.tencentcloudcr.com/aibench/sgl_dev:official_dev_sgl_kernel-0.2.5-ptx-12.8"
+docker_id="aicompute.tencentcloudcr.com/aibench/sgl_dev:official_dev_sgl_kernel-0.2.5-ptx-12.8-0723"
 
 docker run \
     -it \

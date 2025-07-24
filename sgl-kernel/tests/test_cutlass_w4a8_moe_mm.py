@@ -87,43 +87,43 @@ def test_int4_fp8_grouped_gemm_single_expert(batch_size):
 
     # Create output tensor
     c = torch.empty((m, n), dtype=torch.float16, device=device)
-    cutlass_w4a8_moe_mm(
-        c,
-        a_q,
-        w,
-        a_scale,
-        w_scale,
-        expert_offsets[:-1],
-        problem_sizes,
-        a_strides,
-        b_strides,
-        c_strides,
-        s_strides,
-        128,
-        8,
-    )
-
-    # # ref_w: [num_experts, n, k//128]
-    # # w_scale: [num_experts, k//128 / 4, n*4]
-    # # w_scale_fp8: [num_experts, k//128, n]
-    # tmp = w_scale.reshape(
-    #     w_scale.shape[0], w_scale.shape[1], w_scale.shape[2] // 4, 4) # [num_experts, k//128 / 4, n, 4]
-    # tmp = tmp.permute(0, 2, 1, 3)  # [num_experts, n, k//128 / 4, 4]
-    # tmp = tmp.reshape(
-    #     tmp.shape[0], tmp.shape[1], tmp.shape[2] * tmp.shape[3]
-    # )  # [num_experts, n, k//128]
-    # tmp = tmp.contiguous()
-    # w_scale_fp8 = tmp.permute(0, 2, 1).contiguous().to(torch.float8_e4m3fn)
-    # cutlass_w4a8_moe_mm_simple(
+    # cutlass_w4a8_moe_mm(
     #     c,
     #     a_q,
     #     w,
     #     a_scale,
-    #     w_scale_fp8,
+    #     w_scale,
     #     expert_offsets[:-1],
     #     problem_sizes,
+    #     a_strides,
+    #     b_strides,
+    #     c_strides,
+    #     s_strides,
+    #     128,
     #     8,
     # )
+
+    # ref_w: [num_experts, n, k//128]
+    # w_scale: [num_experts, k//128 / 4, n*4]
+    # w_scale_fp8: [num_experts, k//128, n]
+    tmp = w_scale.reshape(
+        w_scale.shape[0], w_scale.shape[1], w_scale.shape[2] // 4, 4) # [num_experts, k//128 / 4, n, 4]
+    tmp = tmp.permute(0, 2, 1, 3)  # [num_experts, n, k//128 / 4, 4]
+    tmp = tmp.reshape(
+        tmp.shape[0], tmp.shape[1], tmp.shape[2] * tmp.shape[3]
+    )  # [num_experts, n, k//128]
+    tmp = tmp.contiguous()
+    w_scale_fp8 = tmp.permute(0, 2, 1).contiguous().to(torch.float8_e4m3fn)
+    cutlass_w4a8_moe_mm_simple(
+        c,
+        a_q,
+        w,
+        a_scale,
+        w_scale_fp8,
+        expert_offsets[:-1],
+        problem_sizes,
+        8,
+    )
 
     c = c.to(dtype)
 
