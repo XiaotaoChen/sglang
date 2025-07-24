@@ -176,7 +176,15 @@ def cutlass_w4a8_moe(
     )
 
     # # custom implementation
-    # w1_scale_fp8 = w1_scale.permute(0, 2, 1).contiguous().to(torch.float8_e4m3fn)
+    # # w1_scale_fp8 = w1_scale.permute(0, 2, 1).contiguous().to(torch.float8_e4m3fn)
+    # tmp = w1_scale.reshape(
+    #     w1_scale.shape[0], w1_scale.shape[1], w1_scale.shape[2] // 4, 4) # [num_experts, k//128 / 4, n, 4]
+    # tmp = tmp.permute(0, 2, 1, 3)  # [num_experts, n, k//128 / 4, 4]
+    # tmp = tmp.reshape(
+    #     tmp.shape[0], tmp.shape[1], tmp.shape[2] * tmp.shape[3]
+    # )  # [num_experts, n, k//128]
+    # tmp = tmp.contiguous()
+    # w1_scale_fp8 = tmp.permute(0, 2, 1).contiguous().to(torch.float8_e4m3fn)
     # cutlass_w4a8_moe_mm_simple(
     #     c1,
     #     gateup_input,
@@ -213,7 +221,15 @@ def cutlass_w4a8_moe(
     )
 
     # # custom implementation
-    # w2_scale_fp8 = w2_scale.permute(0, 2, 1).contiguous().to(torch.float8_e4m3fn)
+    # # w2_scale_fp8 = w2_scale.permute(0, 2, 1).contiguous().to(torch.float8_e4m3fn)
+    # tmp = w2_scale.reshape(
+    #     w2_scale.shape[0], w2_scale.shape[1], w2_scale.shape[2] // 4, 4) # [num_experts, k//128 / 4, n, 4]
+    # tmp = tmp.permute(0, 2, 1, 3)  # [num_experts, n, k//128 / 4, 4]
+    # tmp = tmp.reshape(
+    #     tmp.shape[0], tmp.shape[1], tmp.shape[2] * tmp.shape[3]
+    # )  # [num_experts, n, k//128]
+    # tmp = tmp.contiguous()
+    # w2_scale_fp8 = tmp.permute(0, 2, 1).contiguous().to(torch.float8_e4m3fn)
     # cutlass_w4a8_moe_mm_simple(
     #     c2,
     #     intermediate_q,

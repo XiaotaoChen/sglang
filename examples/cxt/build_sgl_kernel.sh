@@ -1,5 +1,5 @@
 #!/bin/bash
-export CCACHE_DIR=/cfs/xtchen/ccache/sgl-kernel-cu124
+export CCACHE_DIR=/cfs/xtchen/ccache/sgl-kernel-cu126
 export CCACHE_BACKEND=""
 export CCACHE_KEEP_LOCAL_STORAGE="TRUE"
 unset CCACHE_READONLY

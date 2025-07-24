@@ -1,11 +1,6 @@
 #!/bin/bash
 
-# docker_id="aicompute.tencentcloudcr.com/aibench/sglang:latest_tencent"
-# docker_id="aicompute.tencentcloudcr.com/aibench/sgl_dev:0.4.6.post5_sgl_kernel_cxt"
-docker_id="aicompute.tencentcloudcr.com/aibench/sgl_dev:0.4.8.post1_sgl_kernel-0.2.1-w4ap8"
-# docker_id="aicompute.tencentcloudcr.com/aibench/sgl_dev:0.4.6.post5_w4afp8"
-# docker_id="aicompute.tencentcloudcr.com/aibench/sglang:v0.4.9.post2-cu126_tencent"
-# docker_id="lmsysorg/sglang:dev"
+docker_id="aicompute.tencentcloudcr.com/aibench/sgl_dev:official_dev_sgl_kernel-0.2.5-ptx-12.8"
 
 docker run \
     -it \
