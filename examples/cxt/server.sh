@@ -5,24 +5,34 @@
 #   --model-path /cfs/xtchen/models/Llama-3-8B-Instruct \
 #   --host 0.0.0.0 --port 30000
 
-model_dir="/cfs/xtchen/model"
-# deepseek_r1_w4a16_dir="${model_dir}/cfs2_models/deepseek-ai/DeepSeek-R1-awq"
-# deepseek_r1_w4a16_dir="${model_dir}/vda_models/DeepSeek-R1-awq"
-# deepseek_r1_w4a16_dir="${model_dir}/tmpfs_models/DeepSeek-R1-awq"
-deepseek_r1_w4a16_dir="${model_dir}/nvme_models/DeepSeek-R1-awq"
+deepseek_r1_w4fp8_dir="/mnt/xtchen/model/DeepSeek-R1-W4AFP8"
 
-# python3 \
-#   -m sglang.launch_server \
-#   --model-path ${deepseek_r1_w4a16_dir} \
-#   --served-model-name deepseek-r1-w4a16 \
-#   --tp 8 --trust-remote-code --quantization moe_wna16 \
-#   --host 0.0.0.0 --port 30000
 
-python3 \
-  -m sglang.launch_server \
-  --model-path ${deepseek_r1_w4a16_dir} \
-  --served-model-name deepseek-r1-w4a16 \
-  --tp 8 --trust-remote-code --quantization moe_wna16 \
-  --page-size 1 \
-  --mem-fraction-static 0.7 --disable-overlap-schedule \
-  --host 0.0.0.0 --port 30000
+# SGL_ENABLE_JIT_DEEPGEMM=1 python3 -m sglang.launch_server \
+#     --model-path ${deepseek_r1_w4fp8_dir} \
+#     --context-length 8192 \
+#     --tp 8 \
+#     --trust-remote-code \
+#     --host 0.0.0.0 \
+#     --port 8000 \
+#     --mem-fraction-static 0.8 \
+#     --enable-ep-moe \
+#     --cuda-graph-max-bs 256 \
+#     --cuda-graph-bs 1 2 4 8 16 32 64 128 256 \
+#     --max-running-requests 256 \
+#     --disable-radix-cache
+
+
+SGL_ENABLE_JIT_DEEPGEMM=1 python3 -m sglang.launch_server \
+    --model-path ${deepseek_r1_w4fp8_dir} \
+    --context-length 25000 \
+    --tp 8 \
+    --trust-remote-code \
+    --host 0.0.0.0 \
+    --port 8000 \
+    --mem-fraction-static 0.8 \
+    --enable-ep-moe \
+    --cuda-graph-max-bs 32 \
+    --cuda-graph-bs 1 2 4 8 16 32 \
+    --max-running-requests 256 \
+    --disable-radix-cache
