@@ -139,8 +139,7 @@ class RadixCache(BasePrefixCache):
                 tp_size=tp_size,
                 rank=rank,
                 world_size=world_size,
-                k_pool=self.token_to_kv_pool_allocator._kvcache.k_buffer,
-                v_pool=self.token_to_kv_pool_allocator._kvcache.v_buffer,
+                kv_pool = token_to_kv_pool_allocator._kvcache
             )
             self.writer_queue = queue.Queue()
             self.shutdown_event = threading.Event()
@@ -293,7 +292,7 @@ class RadixCache(BasePrefixCache):
             page_aligned_len = len(kv_indices)
             page_aligned_kv_indices = kv_indices.clone()
 
-        if self.lmcache_connector_enabled():
+        if page_aligned_len > 0 and self.lmcache_connector_enabled():
             self.lmcache_connector.store_kv(
                 torch.tensor(token_ids[:page_aligned_len], device=self.device),
                 page_aligned_kv_indices.detach().clone().to(torch.int64).to(self.device),
@@ -338,6 +337,13 @@ class RadixCache(BasePrefixCache):
             page_aligned_len = len(kv_indices)
             page_aligned_kv_indices = kv_indices.clone()
         page_aligned_token_ids = token_ids[:page_aligned_len]
+
+        # cache prompt tokens to LMCache
+        if page_aligned_len > 0 and self.lmcache_connector_enabled():
+            self.lmcache_connector.store_kv(
+                torch.tensor(page_aligned_token_ids, device=self.device),
+                page_aligned_kv_indices.detach().clone().to(torch.int64).to(self.device),
+            )
 
         # Radix Cache takes one ref in memory pool
         new_prefix_len = self.insert(page_aligned_token_ids, page_aligned_kv_indices)
