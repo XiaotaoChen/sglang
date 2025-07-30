@@ -255,6 +255,9 @@ class ServerArgs:
     enable_pdmux: bool = False
     sm_group_num: int = 3
 
+    # For LMCache
+    enable_lmcache_connector: bool = False
+
     def __post_init__(self):
         # Expert parallelism
         if self.enable_ep_moe:
@@ -1740,6 +1743,12 @@ class ServerArgs:
             "--weight-loader-disable-mmap",
             action="store_true",
             help="Disable mmap while loading weight using safetensors.",
+        )
+        # For LMCache
+        parser.add_argument(
+            "--enable-lmcache-connector",
+            action="store_true",
+            help="Enable the LMCache connector.",
         )
 
     @classmethod

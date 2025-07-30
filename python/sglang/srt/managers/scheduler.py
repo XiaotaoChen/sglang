@@ -630,6 +630,12 @@ class Scheduler(
                     page_size=self.page_size,
                     disable=server_args.disable_radix_cache,
                     enable_kv_cache_events=self.enable_kv_cache_events,
+                    model_config=self.model_config,
+                    tp_size=self.tp_size,
+                    rank=self.tp_rank,
+                    # TODO: set proper world size, now assume it's the same as tp_size
+                    world_size=self.tp_size,
+                    enable_lmcache_connector=server_args.enable_lmcache_connector,
                 )
 
         self.decode_mem_cache_buf_multiplier = (
